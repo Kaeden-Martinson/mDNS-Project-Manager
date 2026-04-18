@@ -1,0 +1,10 @@
+{
+  "projects": [],
+  "settings": {
+    "mdnsDomain": "mdns",
+    "scanRange": {
+      "start": 3000,
+      "end": 9999
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "mdns-project-dashboard",
+  "version": "1.0.0",
+  "description": "Local mDNS webpage to manage and launch projects with port scanning",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["mdns", "local", "dashboard", "projects"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy": "^1.18.1",
+    "multicast-dns": "^7.2.5",
+    "tcp-port-used": "^1.0.1",
+    "find-process": "^1.4.7",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
