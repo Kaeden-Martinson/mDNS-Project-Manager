@@ -4,3 +4,8 @@ node_modules/
 npm-debug.log*
 .env
 .vscode/settings.json
+
+# Local data: your registered projects and their process output
+projects.json
+projects.json.*
+logs/
