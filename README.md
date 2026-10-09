@@ -1,390 +1,175 @@
-# mDNS Project Dashboard
+# mDNS Project Manager
 
-A local web dashboard to manage, monitor, and launch all your projects running on different local ports. Access your projects via mDNS at `http://mdns.local` from any device on your network.
+A local dashboard to register, launch and monitor the dev projects running on your machine, and reach each one at its own `http://<name>.local` address from any device on your network.
 
-## Features
+- **mDNS names**: The dashboard is at `http://mdns.local` and every project gets `http://<domain>.local`.
+- **Reverse proxy**: Requests for `<domain>.local` are forwarded to the project's port, WebSockets included, so hot-reload keeps working.
+- **Start / Stop / Restart**: Runs each project's command in its folder and kills the whole process tree when you stop it.
+- **Output**: Each project's output is saved to `logs/<domain>.log` and can be viewed from the dashboard.
+- **Port scanner**: Finds servers that are already running and lets you add them with one click.
+- **Live status**: Running/stopped status refreshes every 5 seconds.
 
-✨ **Key Features:**
-- **mDNS Support** - Access your dashboard at `http://mdns.local` from any network device
-- **Port Scanning** - Auto-detect open ports or manually register projects with one click
-- **Project Management** - Add, edit, and delete projects with custom domains and inline editing
-- **One-Click Launch** - Run, stop, and restart projects directly from the dashboard
-- **Live Port Monitoring** - Real-time status updates every 10 seconds with running project count
-- **Professional Logging** - Color-coded server logs with timestamps and prefixes
-- **Remote Connection Detection** - Helpful banner when accessing from different devices on the network
-- **Persistent Storage** - All projects stored in local JSON config
-- **Professional UI** - Modern dark-mode dashboard with expandable cards, sticky navbar, and SVG icons
-- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices
+## Requirements
 
-## Prerequisites
+- **Node.js 18+**
+- mDNS support on the devices that will resolve `.local` names:
+  - **Windows 10/11**: Built in. On older versions, install Bonjour.
+  - **macOS / iOS**: Built in.
+  - **Linux**: `avahi-daemon` with `nss-mdns`.
+  - **Android**: Support varies by version and browser. Use the IP address if `.local` names don't resolve.
 
-- **Node.js** (v14 or higher)
-- **npm** (comes with Node.js)
-- **Windows, macOS, or Linux**
+## Quick start
 
-### For mDNS to Work
-- **Windows**: Install [Bonjour Print Services](https://support.apple.com/downloads/bonjour) or use mDNS alternatives
-- **macOS**: Built-in support
-- **Linux**: Install `avahi-daemon`
-
-## Installation
-
-1. **Clone or download** this project
-2. **Navigate to the project folder:**
-   ```bash
-   cd mDNS
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-### Windows Admin Requirement
-For port scanning and process management to work optimally, run the server with Administrator privileges:
-- Right-click Command Prompt and select "Run as Administrator"
-- Then run `npm start`
-
-## Configuration
-
-The app uses a `projects.json` file to store your projects. This file is created automatically on first run.
-
-**projects.json structure:**
-```json
-{
-  "projects": [
-    {
-      "id": 1234567890,
-      "name": "My Web App",
-      "port": 3000,
-      "domain": "myapp",
-      "path": "C:\\Projects\\MyApp",
-      "executable": "npm start",
-      "enabled": true,
-      "createdAt": "2024-01-01T00:00:00.000Z"
-    }
-  ],
-  "settings": {
-    "mdnsDomain": "mdns",
-    "scanRange": {
-      "start": 3000,
-      "end": 9999
-    }
-  }
-}
+```bash
+npm install
 ```
-
-## Usage
-
-### Start the Server
 
 ```bash
 npm start
 ```
 
-You should see professional colored logs:
-```
-12:34:56 [SERVER] [+] mDNS responder active
-12:34:56 [SERVER] [+] Config saved successfully
-12:34:56 [SERVER] Server running on http://localhost
-```
-
-**Access your dashboard:**
-- Local machine: `http://localhost` or `http://mdns.local`
-- Other devices on network: `http://10.0.0.181` or `http://mdns.local`
-
-### Adding a Project
-
-**Method 1: Manual Entry**
-1. Click the **"New Domain"** button in the top navbar
-2. Fill in:
-   - **Project Name** (required) - Display name for your project
-   - **Domain** (auto-fills from project name) - Custom subdomain for .local access
-   - **Port** (required) - The local port your project runs on
-   - **Directory** (required) - Full path to your project folder
-   - **Command** (required) - How to run the project (e.g., `npm start`, `python app.py`)
-3. Click **"Save Project"**
-
-**Method 2: Folder Picker (Recommended)**
-1. Click **"New Domain"** button
-2. Click the folder picker to browse to your project directory
-3. The system will:
-   - Auto-detect your project name from the folder
-   - Scan for common server files (server.js, app.py, etc.)
-   - Suggest appropriate commands (npm start, python3 app.py, etc.)
-4. Adjust any fields if needed and save
-
-### Managing Projects
-
-**Run a Project:**
-1. Find your project card on the dashboard
-2. Click the **"Start"** button (green)
-3. The status will update to show "Running" when the process starts
-
-**Stop a Project:**
-- Click the **"Stop"** button (red) on a running project
-
-**Restart a Project:**
-- Click the **"Restart"** button (cyan) to cleanly stop and restart it
-
-**View/Edit Project Details:**
-- Click anywhere on the project card to expand it
-- Edit any field inline (Name, Domain, Port, Path, Command)
-- Changes save automatically when you deselect the field
-
-**Access Your Project:**
-- Click the **"Open"** button to open in browser
-- Or visit `http://[domain].local` directly (e.g., `http://myapp.local`)
-- Copy the link with the **"Copy"** button
-
-**Supported command formats:**
-- `npm start` - Node.js projects
-- `yarn start` - Yarn projects
-- `python app.py` - Python projects
-- `python3 app.py` - Python 3 projects
-- `./start.bat` - Batch files
-- `cmd /c start.bat` - Alternative batch execution
-- `C:\Full\Path\To\executable.exe` - Direct executable paths
-- PowerShell commands like `powershell -ExecutionPolicy Bypass -File script.ps1`
-
-### Scanning for Ports
-
-1. Click the **"Scan"** button in the top navbar
-2. Adjust the port range if needed (default: 3000-9999)
-3. Click **"Start Scanning"**
-4. Results will show with:
-   - Port number and process name
-   - Indication if already registered ("Already Added")
-   - Click **"+ Add"** to quickly register new ports as projects
-
-## API Endpoints
-
-The dashboard provides the following REST API:
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/projects` | Get all projects |
-| POST | `/api/projects` | Add new project |
-| PUT | `/api/projects/:id` | Update project |
-| DELETE | `/api/projects/:id` | Delete project |
-| POST | `/api/execute/:id` | Run/execute a project |
-| GET | `/api/port-status/:port` | Check if port is open |
-| GET | `/api/scan-ports?start=3000&end=9999` | Scan for open ports |
-| GET | `/api/config` | Get settings |
-| PUT | `/api/config` | Update settings |
-
-### Example: Add a Project via API
+The server listens on port 80 by default, so `http://mdns.local` works without a port number. On Windows you may need an **Administrator** terminal. On macOS or Linux, either use `sudo` or pick a higher port:
 
 ```bash
-curl -X POST http://localhost/api/projects \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "React App",
-    "port": 3000,
-    "domain": "react-app",
-    "path": "C:\\dev\\react-app",
-    "executable": "npm start"
-  }'
+PORT=8080 npm start
 ```
 
-### Example: Execute a Project
+Then open `http://localhost` on the machine itself, or `http://mdns.local` (or the printed IP address) from another device.
+
+### Environment variables
+
+| Variable      | Default          | Purpose                                   |
+|---------------|------------------|-------------------------------------------|
+| `PORT`        | `80`             | HTTP port for the dashboard and the proxy |
+| `HOST`        | `0.0.0.0`        | Address to bind to                        |
+| `CONFIG_FILE` | `./projects.json`| Where projects and settings are stored    |
+| `LOG_LEVEL`   | `info`           | `debug`, `info`, `warn` or `error`        |
+
+## Using it
+
+### Add a project
+
+1. Click **Add project**.
+2. Optionally pick the project folder. The dashboard looks at the top-level files (such as `package.json`, `server.js`, `app.py` or `manage.py`) to suggest a name and a start command. Browsers don't reveal a folder's full path, so you still have to paste the path into **Directory**.
+3. Fill in the **Port** the project listens on. The domain follows the project name until you edit it yourself.
+4. Click **Save Project**.
+
+You can also open **Port scan**, scan a range, and click **Add** next to a server that is already running.
+
+### Run it
+
+Click a project row to expand it. The row itself has a quick Start/Stop button and an Open link. The expanded panel lets you:
+
+- **Start, Stop or Restart** the project.
+- Toggle **Output** to see its log.
+- Edit any field inline. Changes save when you leave the field or press Enter.
+
+The command runs through the system shell inside the project directory, with `PORT` set to the project's port. If the command is just a script path, the right interpreter is added for you:
+
+| Command           | Runs as                                         |
+|-------------------|-------------------------------------------------|
+| `app.py`          | `python app.py` (Windows) / `python3 app.py`    |
+| `server.js`       | `node server.js`                                |
+| `start.ps1`       | `powershell -ExecutionPolicy Bypass -File ...`  |
+| `start.sh`        | `sh start.sh`                                   |
+| `npm run dev` etc.| unchanged                                       |
+
+Projects keep running if the dashboard is stopped.
+
+## How it works
+
+```
+ phone / laptop                      this machine
+ ──────────────                      ─────────────────────────────────────
+ "who is myapp.local?"  ──mDNS──▶   src/services/mdns.js answers with the LAN IP
+ GET http://myapp.local ──HTTP──▶   src/services/proxy.js  ──▶ 127.0.0.1:<project port>
+ GET http://mdns.local  ──HTTP──▶   dashboard (public/) + JSON API (src/routes/)
+```
+
+## Project structure
+
+```
+server.js                  Entry point: HTTP server, WebSocket upgrades, shutdown
+src/
+  app.js                   Express app: proxy -> host check -> API -> static files
+  config/
+    constants.js           Ports, paths, defaults (env overrides)
+    store.js               projects.json persistence (cached, atomic writes, validation)
+  middleware/
+    security.js            Host allow-list (DNS rebinding) + same-origin check (CSRF)
+  routes/
+    projects.js            /api/projects CRUD + start/stop/restart/status/logs
+    system.js              /api/config, /api/port-status, /api/scan-ports
+    helpers.js             asyncHandler + JSON error handler
+  services/
+    mdns.js                mDNS responder / announcer
+    proxy.js               Reverse proxy for <domain>.local (HTTP + WebSocket)
+    runner.js              Launches projects, tracks children, log files
+    processes.js           Find/kill the processes listening on a port (Win/macOS/Linux)
+    ports.js               Fast parallel TCP port probing / scanning
+  utils/
+    logger.js              Coloured console logger with LOG_LEVEL
+    network.js             Local IP / hostname helpers
+    pages.js               Small HTML pages (project offline, unknown host)
+    validation.js          Input validation for projects and settings
+public/
+  index.html
+  css/styles.css
+  js/
+    main.js                Frontend entry point, view switching, status polling
+    api.js                 fetch wrapper for the API
+    state.js               Shared client state
+    projectList.js         Projects table, expandable rows, inline editing, controls
+    projectForm.js         Add project dialog + command detection
+    scanner.js             Port scan and Settings views
+    utils.js               escapeHtml, slugify, clipboard...
+    ui/icons.js            The SVG icon set (no emoji anywhere in the UI)
+    ui/toast.js, ui/modal.js
+```
+
+`projects.json` and `logs/` hold local data and are git-ignored. `projects.json` is created on first run.
+
+## API
+
+All endpoints are under `/api` and use JSON.
+
+| Method | Path                          | Description                                 |
+|--------|-------------------------------|---------------------------------------------|
+| GET    | `/projects`                   | List projects                               |
+| POST   | `/projects`                   | Create `{name, port, domain?, path, executable}` |
+| PUT    | `/projects/:id`               | Update any of the fields above              |
+| DELETE | `/projects/:id[?stop=true]`   | Delete, optionally stopping it first        |
+| GET    | `/projects/status`            | `[{id, running, managed}]` for all projects |
+| POST   | `/projects/:id/start`         | Start                                       |
+| POST   | `/projects/:id/stop`          | Stop (kills the process tree on its port)   |
+| POST   | `/projects/:id/restart`       | Restart                                     |
+| GET    | `/projects/:id/logs`          | Last 64 KB of output (text)                 |
+| GET    | `/config` / PUT `/config`     | Settings `{mdnsDomain, scanRange:{start,end}}` |
+| GET    | `/port-status/:port`          | `{port, isOpen}`                            |
+| GET    | `/scan-ports?start=&end=`     | Open ports plus process name/PID            |
+
+Example:
 
 ```bash
-curl -X POST http://localhost/api/execute/PROJECT_ID
+curl -X POST http://localhost/api/projects -H "Content-Type: application/json" -d '{"name":"My App","port":3000,"path":"C:/code/my-app","executable":"npm run dev"}'
 ```
 
-## Advanced Usage
+## Security notes
 
-### Change Server Port
+The dashboard can run commands on your machine, so keep these in mind:
 
-Edit `server.js` to change the default HTTP port:
-```javascript
-const PORT = 8080; // Default is 80 (HTTP)
-```
-
-Then access at `http://localhost:8080` or `http://mdns.local:8080`
-
-### Access from Different Machines
-
-If you can't access via `.local` domain:
-- Find your local network IP (e.g., 192.168.1.5 or 10.0.0.181)
-- Access dashboard: `http://10.0.0.181`
-- Access project: `http://10.0.0.181:3000` (replace 3000 with actual project port)
-- A helpful banner will appear telling you to use the main machine
-
-### Manual Configuration
-
-Edit `projects.json` directly to manage projects:
-
-```json
-{
-  "projects": [
-    {
-      "id": 1234567890,
-      "name": "My App",
-      "port": 3000,
-      "domain": "myapp",
-      "path": "C:\\Projects\\MyApp",
-      "executable": "npm start",
-      "enabled": true,
-      "createdAt": "2024-01-01T00:00:00.000Z"
-    }
-  ],
-  "settings": {
-    "mdnsDomain": "mdns",
-    "scanRange": { "start": 3000, "end": 9999 }
-  }
-}
-```
-
-### Command Examples
-
-**Node.js Projects**
-```
-Command: npm start
-Path: C:\Projects\MyApp
-```
-
-**Python Projects**
-```
-Command: python3 app.py
-Path: /home/user/myapp
-```
-
-**Batch Files**
-```
-Command: cmd /c C:\Scripts\deploy.bat
-Path: C:\Scripts
-```
-
-**PowerShell Scripts**
-```
-Command: powershell -ExecutionPolicy Bypass -File C:\Scripts\startup.ps1
-Path: C:\Scripts
-```
-
-**Direct Executables**
-```
-Command: C:\Program Files\MyApp\app.exe
-Path: C:\Program Files\MyApp
-```
+- **Browser requests are restricted.** API calls that change something are rejected if they come from another website (CSRF), and the API only answers on known hostnames, which blocks DNS-rebinding attacks.
+- **Your LAN is still trusted.** Anyone on your network who can open the dashboard can start, stop and edit projects. Only run it on networks you trust, or bind it to localhost with `HOST=127.0.0.1`.
+- **Stopping a project kills whatever is listening on its port**, even if the dashboard didn't start it.
 
 ## Troubleshooting
 
-### mDNS not working on your device?
-
-1. **Windows**: Install [Bonjour Print Services](https://support.apple.com/downloads/bonjour) or use direct IP
-2. **macOS**: Should work out of the box
-3. **Linux**: Install avahi-daemon: `sudo apt-get install avahi-daemon`
-4. **Mobile devices**: Some Android devices have mDNS limitations - use direct IP instead
-5. **Fallback**: Use direct IP address (e.g., `http://10.0.0.181`) instead of `.local` domain
-
-### Projects won't start?
-
-- Verify the project path exists and is correct
-- Ensure the port is not already in use by another application
-- Check that you have permissions to execute the file
-- For batch files: use `cmd /c C:\path\to\file.bat`
-- For PowerShell: use `powershell -ExecutionPolicy Bypass -File C:\path\script.ps1`
-- Review the server logs for error messages (color-coded with [SERVER] prefix)
-
-### Port scanning not finding open ports?
-
-- Increase the port range in the scan dialog
-- Ensure projects are actually running on those ports
-- Run the server with Administrator privileges on Windows
-- Check firewall settings
-
-### CORS or remote access issues?
-
-- The dashboard automatically detects remote connections
-- You'll see a helpful banner if accessing from a different device
-- CORS is enabled by default for all network access
-- API base URL is dynamic and works with any hostname/IP
-
-## Project Structure
-
-```
-mDNS/
-├── server.js              # Express server & API routes with professional logging
-├── package.json           # Dependencies & npm scripts
-├── projects.json          # Projects configuration (auto-created)
-├── utils/
-│   └── logger.js          # Professional logger class with color coding
-├── public/
-│   ├── index.html         # Main dashboard page with navbar
-│   ├── app.js             # Frontend logic (800+ lines)
-│   └── styles.css         # Professional dark-mode styling
-└── README.md              # This file
-```
-
-## Dependencies
-
-- **express** (^4.18.2) - Web server framework
-- **multicast-dns** (^7.2.5) - mDNS responder for .local domains
-- **tcp-port-used** (^1.0.1) - Port availability checking
-- **find-process** - Process discovery by port
-- **http-proxy** - Domain-based reverse proxying
-- **cors** (^2.8.5) - Cross-Origin Resource Sharing
-- **body-parser** (^1.20.2) - JSON request parsing
-
-## Performance Tips
-
-- Limit port range when scanning (smaller = faster)
-- Close unused projects to reduce port monitoring
-- mDNS discovery works best on the same local network
-
-## Security Notes
-
-⚠️ **Important:**
-- This dashboard should **only** be used on trusted local networks
-- It can execute arbitrary commands on your machine
-- Do not expose this to the internet without authentication
-- Anyone with access can execute any command
-
-## Common Use Cases
-
-### Development Environment
-Manage all your local dev servers from one dashboard:
-- **Frontend**: React, Vue, Angular (ports 3000-3010)
-- **Backend**: Node.js, Python (ports 5000-5010)
-- **APIs**: Express, Flask (ports 8000-8010)
-- **Databases**: MongoDB (27017), PostgreSQL (5432)
-
-### Local Testing
-Monitor and launch multiple test environments
-
-### IoT/Embedded Projects
-Manage services running on Raspberry Pi or similar devices on your network
-
-## Future Enhancements
-
-- Dashboard with charts and metrics
-- Authentication and user management
-- Project documentation and notes
-- Auto-restart on failure
-- Docker container support
-- Advanced network discovery
-- System tray integration
-- Project grouping and organization
-- Activity logging and debugging output
-
-## Contributing
-
-Feel free to fork, modify, and improve this project!
+- **`.local` names don't resolve.** Make sure UDP port 5353 is allowed through your firewall. Another mDNS service (such as Bonjour or iTunes) can also hold the port exclusively. You can always fall back to the IP address.
+- **"Permission denied for port 80".** Run as Administrator or root, or set `PORT=8080`.
+- **A project won't start.** Open **Output** in its row. The usual causes are a wrong directory, a command that isn't on `PATH`, or the app ignoring the port you entered.
+- **A project shows "Stopped" but is running.** Check that it listens on the port you registered. Servers bound to `127.0.0.1`, `::1` or `0.0.0.0` are all detected.
+- **Stop doesn't work on Windows.** Processes started by another user or as admin can only be killed if the dashboard is running as Administrator.
 
 ## License
 
 MIT
-
-## Support
-
-For issues or questions, check the troubleshooting section above or review the API endpoints documentation.
-
----
-
-**Happy coding!**
-
-Access your dashboard at: **http://mdns.local**
-
-Manage all your local projects in one place!

@@ -4,198 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mDNS Project Manager</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b93ff' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%236b93ff' stroke='none'/%3E%3Cpath d='M8.2 15.8a5.4 5.4 0 0 1 0-7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.3 18.7a9.5 9.5 0 0 1 0-13.4M18.7 5.3a9.5 9.5 0 0 1 0 13.4'/%3E%3C/svg%3E">
+    <!-- Inter if online; the system UI font stack takes over on an offline LAN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- type="module" scripts are deferred: they run after the DOM is parsed -->
+    <script type="module" src="js/main.js"></script>
 </head>
 <body>
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
+<div class="app">
 
-    <!-- Remote Connection Banner -->
-    <div id="remoteBanner" class="remote-banner" style="display: none;">
-        <div class="remote-banner-content">
-            <svg class="remote-banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                <path d="M12 8V12M12 16H12.01" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <div class="remote-banner-text">
-                <strong>Accessing from another device:</strong> The dashboard works best when accessed from the main computer. For optimal performance and full functionality, access this at <code>mdns.local</code> or <code>server-ip</code> from your main machine.
-            </div>
-            <button class="remote-banner-close" onclick="document.getElementById('remoteBanner').style.display = 'none';">&times;</button>
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-mark" data-icon="logo" data-size="20"></span>
+            <span class="brand-name">mDNS Manager</span>
         </div>
-    </div>
 
-    <div class="container">
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="navbar-brand">
-                <span class="brand-icon">◆</span>
-                <span class="brand-text">Project Manager</span>
-            </div>
-            <div class="navbar-actions">
-                <button class="btn btn-primary" id="addProjectBtn">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    New Domain
-                </button>
-                <button class="btn btn-secondary" id="settingsBtn">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="2" stroke-width="2"/>
-                        <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5.6 5.6l1.4 1.4m10 10l1.4 1.4M18.4 5.6l-1.4 1.4m-10 10l-1.4 1.4" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    Scan
-                </button>
-            </div>
+        <nav class="nav" aria-label="Sections">
+            <a class="nav-item" href="#projects" data-view="projects">
+                <span data-icon="projects"></span>
+                <span>Projects</span>
+                <span class="nav-count" id="navCount"></span>
+            </a>
+            <a class="nav-item" href="#scan" data-view="scan">
+                <span data-icon="scan"></span>
+                <span>Port scan</span>
+            </a>
+            <a class="nav-item" href="#settings" data-view="settings">
+                <span data-icon="settings"></span>
+                <span>Settings</span>
+            </a>
         </nav>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Status Bar -->
-            <div class="status-bar">
-                <span id="projectCount">0 projects</span>
-                <span id="runningCount">0 running</span>
-            </div>
+        <dl class="sidebar-foot">
+            <dt>Dashboard</dt>
+            <dd class="mono" data-ref="dashboard-domain">mdns.local</dd>
+            <dt>Host IP</dt>
+            <dd class="mono" data-ref="host-ip">—</dd>
+        </dl>
+    </aside>
 
-            <!-- Projects Grid -->
-            <section class="projects-section">
-                <div id="projectsGrid" class="projects-grid">
-                    <div class="empty-state">
-                        <p>No projects yet</p>
-                        <p class="text-secondary">Click "New Project" to get started</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
+    <!-- ===================== Main column ===================== -->
+    <main class="main">
 
-    <!-- Add/Edit Project Modal -->
-    <div id="projectModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">New Project</h2>
-                <button class="modal-close" id="closeModal">&times;</button>
-            </div>
-
-            <div class="modal-body">
-                <!-- Folder Picker Section -->
-                <div class="form-section">
-                    <h3>1. Select Project Folder</h3>
-                    <div class="file-picker">
-                        <input 
-                            type="file" 
-                            id="projectFilePicker" 
-                            webkitdirectory
-                            class="file-input"
-                        >
-                        <label for="projectFilePicker" class="file-label">
-                            <span class="file-icon">📂</span>
-                            <span class="file-text" id="filePickerText">Click to select project folder</span>
-                        </label>
-                    </div>
-                    <p class="help-text">Select your project folder - we'll auto-detect settings</p>
-                </div>
-
-                <!-- Project Details Section -->
-                <div class="form-section">
-                    <h3>2. Project Details</h3>
-                    
-                    <div class="form-group">
-                        <label for="projectName">Project Name *</label>
-                        <input type="text" id="projectName" placeholder="e.g., My API Server" required>
-                        <p class="help-text">A friendly name for your project</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="projectDomain">Domain Name</label>
-                        <div class="domain-input">
-                            <input type="text" id="projectDomain" placeholder="e.g., myproject">
-                            <span class="domain-suffix">.local</span>
-                        </div>
-                        <p class="help-text">Access via http://[domain].local (auto-generated from directory name if blank)</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="projectPort">Port *</label>
-                        <input type="number" id="projectPort" placeholder="e.g., 3000" min="1" max="65535" required>
-                        <p class="help-text">The port your project runs on</p>
-                    </div>
-                </div>
-
-                <!-- Project Path & Command Section -->
-                <div class="form-section">
-                    <h3>3. Configuration</h3>
-                    
-                    <div class="form-group">
-                        <label for="projectPath">Full Project Directory Path *</label>
-                        <input type="text" id="projectPath" placeholder="e.g., C:\Users\You\Desktop\my-project" required>
-                        <p class="help-text">The complete filesystem path to your project (detected folder name shown above after selection)</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="projectExecutable">Run Command *</label>
-                        <input type="text" id="projectExecutable" placeholder="e.g., npm start" required>
-                        <p class="help-text">Command to execute (auto-detected but editable)</p>
-                    </div>
-
-                    <div class="command-suggestions">
-                        <p class="text-secondary">💡 Detected commands (select one or edit):</p>
-                        <div id="commandSuggestions" class="suggestions-list"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                <button class="btn btn-primary" id="saveProjectBtn">Save Project</button>
-            </div>
+        <!-- Shown when the server marks this browser as another device on the LAN -->
+        <div id="remoteBanner" class="notice" hidden>
+            <span data-icon="monitor"></span>
+            <p>You're viewing this from another device. Start and Stop run projects on the host computer, not this one.</p>
+            <button class="icon-btn" id="remoteBannerClose" aria-label="Dismiss"><span data-icon="close"></span></button>
         </div>
-    </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header">
-                <h2>Settings</h2>
-                <button class="modal-close" id="closeSettings">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="scanStart">Port Scan Range (Start)</label>
-                    <input type="number" id="scanStart" value="3000" min="1" max="65535">
+        <!-- ---------- Projects ---------- -->
+        <section class="view" id="view-projects" aria-labelledby="projectsTitle">
+            <header class="ph">
+                <div>
+                    <h1 id="projectsTitle">Projects</h1>
+                    <p>Local servers, each reachable at its own <span class="mono">.local</span> address</p>
                 </div>
-                <div class="form-group">
-                    <label for="scanEnd">Port Scan Range (End)</label>
-                    <input type="number" id="scanEnd" value="9999" min="1" max="65535">
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-secondary" id="scanPortsBtn">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="12" cy="12" r="9" stroke-width="2"/>
-                            <path d="M12 7v5l3.5 2" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Scan for Open Ports
-                    </button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="closeSettingsBtn">Close</button>
-            </div>
-        </div>
-    </div>
+                <button class="btn primary" id="addProjectBtn"><span data-icon="plus"></span>Add project</button>
+            </header>
 
-    <!-- Scan Results Modal -->
-    <div id="scanModal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h2>Found Open Ports</h2>
-                <button class="modal-close" id="closeScanModal">&times;</button>
+            <div class="sum">
+                <div>
+                    <div class="k">Running</div>
+                    <div class="v" id="sumRunning">—</div>
+                    <div class="n" id="sumRunningNote">&nbsp;</div>
+                </div>
+                <div>
+                    <div class="k">Dashboard address</div>
+                    <div class="v v-mono"><span data-ref="dashboard-url">http://mdns.local</span></div>
+                    <div class="n">Open this on any device on your network</div>
+                </div>
+                <div>
+                    <div class="k">Status checked</div>
+                    <div class="v" id="sumChecked">—</div>
+                    <div class="n">Refreshes every 5 seconds</div>
+                </div>
             </div>
-            <div class="modal-body">
-                <div id="scanResults" class="scan-results"></div>
-            </div>
-        </div>
-    </div>
 
-    <script src="app.js"></script>
+            <div class="tbl projects-tbl" id="projectsTable">
+                <div class="tr head" role="row">
+                    <div>Project</div><div>Address</div><div class="num">Port</div><div>Status</div><div></div>
+                </div>
+                <div id="projectsBody">
+                    <!-- Skeleton rows until the first load completes -->
+                    <div class="tr skeleton-row"><i></i><i></i><i></i><i></i><i></i></div>
+                    <div class="tr skeleton-row"><i></i><i></i><i></i><i></i><i></i></div>
+                    <div class="tr skeleton-row"><i></i><i></i><i></i><i></i><i></i></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ---------- Port scan ---------- -->
+        <section class="view" id="view-scan" aria-labelledby="scanTitle" hidden>
+            <header class="ph">
+                <div>
+                    <h1 id="scanTitle">Port scan</h1>
+                    <p>Find servers already running on this machine and register them</p>
+                </div>
+            </header>
+
+            <form class="scan-bar" id="scanForm">
+                <label class="field-inline">
+                    <span>From</span>
+                    <input type="number" id="scanStart" value="3000" min="1" max="65535" class="mono">
+                </label>
+                <label class="field-inline">
+                    <span>To</span>
+                    <input type="number" id="scanEnd" value="9999" min="1" max="65535" class="mono">
+                </label>
+                <button class="btn primary" id="scanPortsBtn" type="submit"><span data-icon="scan"></span>Scan</button>
+                <p class="scan-note" id="scanNote">Checks 127.0.0.1 and ::1. The range is remembered.</p>
+            </form>
+
+            <div class="tbl scan-tbl" id="scanTable" hidden>
+                <div class="tr head" role="row">
+                    <div class="num">Port</div><div>Process</div><div class="num">PID</div><div></div>
+                </div>
+                <div id="scanResults"></div>
+            </div>
+        </section>
+
+        <!-- ---------- Settings ---------- -->
+        <section class="view" id="view-settings" aria-labelledby="settingsTitle" hidden>
+            <header class="ph">
+                <div>
+                    <h1 id="settingsTitle">Settings</h1>
+                    <p>How this dashboard appears on your network</p>
+                </div>
+            </header>
+
+            <div class="s">
+                <div>
+                    <h2>Dashboard address</h2>
+                    <p class="d">The name other devices type to reach this page. Projects can't use it.</p>
+                </div>
+                <form id="settingsForm" class="s-body">
+                    <div class="domain-field">
+                        <input type="text" id="mdnsDomain" maxlength="63" class="mono" spellcheck="false" autocomplete="off">
+                        <span class="suffix mono">.local</span>
+                    </div>
+                    <div class="acts"><button class="btn primary sm" id="saveSettingsBtn" type="submit">Save</button></div>
+                </form>
+            </div>
+
+            <div class="s">
+                <div>
+                    <h2>This machine</h2>
+                    <p class="d">Where <span class="mono">.local</span> names point. Answers use the address on the asking device's subnet.</p>
+                </div>
+                <dl class="kv">
+                    <dt>Host IP</dt><dd class="mono" data-ref="host-ip">—</dd>
+                    <dt>Dashboard</dt><dd class="mono" data-ref="dashboard-url">http://mdns.local</dd>
+                    <dt>Project logs</dt><dd class="mono">logs/&lt;domain&gt;.log</dd>
+                </dl>
+            </div>
+
+            <div class="s">
+                <div>
+                    <h2>Access</h2>
+                    <p class="d">Other websites can't control this dashboard.</p>
+                </div>
+                <p class="s-text">Anyone on your network who can open this page can start, stop and edit projects. To keep it to this computer only, start the server with <span class="mono">HOST=127.0.0.1</span>.</p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- ===================== Add project dialog ===================== -->
+<div id="projectModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+        <header class="modal-header">
+            <div>
+                <h2 id="modalTitle">Add project</h2>
+                <p>It will be reachable at <span class="mono" id="modalPreviewUrl">http://—.local</span></p>
+            </div>
+            <button class="icon-btn" data-close-modal aria-label="Close"><span data-icon="close"></span></button>
+        </header>
+
+        <form class="modal-body" id="projectForm" novalidate>
+            <input type="file" id="projectFilePicker" webkitdirectory class="file-input" tabindex="-1">
+            <label for="projectFilePicker" class="folder-pick">
+                <span data-icon="folder" data-size="18"></span>
+                <span>
+                    <b id="filePickerText">Choose the project folder</b>
+                    <small>Optional. Reads file names to suggest a start command. Nothing is uploaded.</small>
+                </span>
+            </label>
+
+            <div class="form-grid">
+                <label class="field">
+                    <span>Name</span>
+                    <input type="text" id="projectName" placeholder="Inventory API" maxlength="100" required>
+                </label>
+                <label class="field">
+                    <span>Port</span>
+                    <input type="number" id="projectPort" placeholder="3000" min="1" max="65535" class="mono" required>
+                </label>
+                <label class="field span-2">
+                    <span>Domain</span>
+                    <span class="domain-field">
+                        <input type="text" id="projectDomain" placeholder="inventory-api" maxlength="63" class="mono" spellcheck="false" autocomplete="off">
+                        <span class="suffix mono">.local</span>
+                    </span>
+                    <small>Follows the name until you edit it.</small>
+                </label>
+                <label class="field span-2">
+                    <span>Directory</span>
+                    <input type="text" id="projectPath" placeholder="C:\Users\you\code\inventory-api" class="mono" spellcheck="false" required>
+                    <small>Paste the full path. Browsers only expose the folder's name.</small>
+                </label>
+                <label class="field span-2">
+                    <span>Start command</span>
+                    <input type="text" id="projectExecutable" placeholder="npm run dev" class="mono" spellcheck="false" required>
+                    <small>Runs in the directory with <span class="mono">PORT</span> set. Output goes to <span class="mono">logs/</span>.</small>
+                </label>
+            </div>
+
+            <div class="suggestions" id="commandSuggestionsBox" hidden>
+                <span class="k">Detected</span>
+                <div id="commandSuggestions" class="suggestion-list"></div>
+            </div>
+        </form>
+
+        <footer class="modal-footer">
+            <button class="btn" data-close-modal type="button">Cancel</button>
+            <button class="btn primary" id="saveProjectBtn" type="submit" form="projectForm">Add project</button>
+        </footer>
+    </div>
+</div>
+
+<!-- Toasts are appended here by js/ui/toast.js -->
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
 </body>
 </html>
